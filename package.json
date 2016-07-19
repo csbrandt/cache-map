@@ -1,0 +1,27 @@
+{
+  "name": "cache-map",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "csbrandt",
+  "dependencies": {
+    "d3": "3.5.17",
+    "topojson": "^1.6.26"
+  },
+  "devDependencies": {
+    "browserify": "^13.0.0",
+    "coffee-script": "^1.10.0",
+    "eslint": "^2.7.0",
+    "gulp": "^3.9.1",
+    "gulp-coffee": "*",
+    "gulp-eslint": "^2.0.0",
+    "gulp-less": "^3.0.5",
+    "gulp-uglify": "^1.5.3",
+    "rimraf": "^2.5.2",
+    "stringify": "^5.1.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
+  }
+}
