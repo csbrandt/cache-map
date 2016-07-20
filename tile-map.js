@@ -56,7 +56,7 @@ function TileMap(options) {
       document.getElementsByClassName('zoom-container')[0].style.display = 'none';
    }
 
-   d3.selectAll('a.zoom').on('click', this.zoomClick);
+   d3.selectAll('a.zoom').on('click', this.zoomClick.bind(this));
    this.zoomed();
 }
 
@@ -70,20 +70,20 @@ TileMap.prototype.zoomed = function() {
       .scale(this.zoom.scale() / 2 / Math.PI)
       .translate(this.zoom.translate());
 
-   var image = this.layer
+   this.image = this.layer
       .style(this.prefix + "transform", matrix3d(tiles.scale, tiles.translate))
       .selectAll(".tile")
       .data(tiles, function(d) {
          return d;
       });
 
-   image.exit()
+   this.image.exit()
       .each(function(d) {
          this._xhr.abort();
       })
       .remove();
 
-   image.enter().append("svg")
+   this.image.enter().append("svg")
       .attr("class", "tile")
       .style("left", function(d) {
          return d[0] * 256 + "px";
@@ -109,13 +109,24 @@ TileMap.prototype.interpolateZoom = function(translate, scale) {
 };
 
 TileMap.prototype.zoomClick = function() {
-   var clicked = d3.event.target,
-      direction = 1,
-      factor = 0.2,
-      target_zoom = 1,
-      center = [this.width / 2, this.height / 2],
-      extent = this.zoom.scaleExtent(),
-      translate = this.zoom.translate(),
+   var extent = this.zoom.scaleExtent();
+   var target_zoom = 1;
+   var direction = 1;
+   var factor = 0.2;
+   d3.event.preventDefault();
+
+   direction = (this.id === 'zoom_in') ? 1 : -1;
+   target_zoom = this.zoom.scale() * (1 + factor * direction);
+
+   if (target_zoom < extent[0] || target_zoom > extent[1]) {
+      return false;
+   }
+
+   this.zoomTo([this.width / 2, this.height / 2], target_zoom);
+}
+
+TileMap.prototype.zoomTo = function(point, zoom) {
+   var translate = this.zoom.translate(),
       translate0 = [],
       l = [],
       view = {
@@ -124,20 +135,12 @@ TileMap.prototype.zoomClick = function() {
          k: this.zoom.scale()
       };
 
-   d3.event.preventDefault();
-   direction = (this.id === 'zoom_in') ? 1 : -1;
-   target_zoom = this.zoom.scale() * (1 + factor * direction);
-
-   if (target_zoom < extent[0] || target_zoom > extent[1]) {
-      return false;
-   }
-
-   translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
-   view.k = target_zoom;
+   translate0 = [(point[0] - view.x) / view.k, (point[1] - view.y) / view.k];
+   view.k = zoom;
    l = [translate0[0] * view.k + view.x, translate0[1] * view.k + view.y];
 
-   view.x += center[0] - l[0];
-   view.y += center[1] - l[1];
+   view.x += point[0] - l[0];
+   view.y += point[1] - l[1];
 
    this.interpolateZoom([view.x, view.y], view.k);
 };
